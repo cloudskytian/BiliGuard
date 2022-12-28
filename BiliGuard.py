@@ -7,6 +7,7 @@ import requests
 import sys
 import time
 import os
+import openpyxl
 
 print("当前路径：{}\n".format(os.getcwd()))
 
@@ -189,12 +190,6 @@ def get_month_guards(year, month):
 
 
 if __name__ == "__main__":
-    print("本工具仅导出 csv 格式表格文件，不导出 xlsx（Excel 文件）的原因如下：")
-    print("xlsx 格式文件默认会识别数字，但当数字长度大于 15 位时会丢失数据")
-    print(
-        "详见：https://learn.microsoft.com/zh-cn/office/troubleshoot/excel/long-numbers-incorrectly-in-excel\n"
-    )
-
     now = time.time()
     localtime = time.localtime(now)
     year = localtime.tm_year
@@ -218,8 +213,9 @@ if __name__ == "__main__":
     start = time.strftime("%Y-%m-%d", start)
     end = time.localtime(END)
     end = time.strftime("%Y-%m-%d", end)
-    file_name = "BiliGuard_{}_{}.csv".format(start, end)
-    with open(file_name, "w", encoding="utf-8-sig", newline="") as f:
+    file_name = "BiliGuard_{}_{}".format(start, end)
+
+    with open(file_name + ".csv", "w", encoding="utf-8-sig", newline="") as f:
         writer_zh = csv.DictWriter(f, fieldnames=["时间", "用户名", "用户ID", "舰长类型", "数量"])
         writer_zh.writeheader()
         writer = csv.DictWriter(
@@ -230,4 +226,30 @@ if __name__ == "__main__":
         for level in guards:
             for guard in guards[level]:
                 writer.writerow(guards[level][guard])
-    print("已保存到 {}".format(file_name))
+    print("已保存到 {}".format(file_name + ".csv"))
+
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    row = ("时间", "用户名", "用户ID", "舰长类型", "数量")
+    sheet.append(row)
+    num = 2
+    for level in guards:
+        for guard in guards[level]:
+            row = (
+                guards[level][guard]["time"],
+                guards[level][guard]["uname"],
+                str(guards[level][guard]["uid"]),
+                guards[level][guard]["gift_name"],
+                guards[level][guard]["gift_num"],
+            )
+            sheet.append(row)
+            cell = sheet["C" + str(num)]
+            cell.number_format = "@"
+            num += 1
+    sheet.column_dimensions["A"].width = 20
+    sheet.column_dimensions["B"].width = 15
+    sheet.column_dimensions["C"].width = 20
+    sheet.column_dimensions["D"].width = 10
+    sheet.column_dimensions["E"].width = 5
+    workbook.save(file_name + ".xlsx")
+    print("已保存到 {}".format(file_name + ".xlsx"))
