@@ -1,12 +1,12 @@
 # -*- coding: UTF-8 -*-
 
 import calendar
+import csv
 import json
 import requests
 import sys
 import time
 import os
-import openpyxl
 
 print("当前路径：{}\n".format(os.getcwd()))
 
@@ -60,14 +60,12 @@ def cookies_help():
         "1.Chrome 系浏览器使用扩展 EditThisCookie（需翻墙）：https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg"
     )
     print("2.浏览器打开B站，使用 EditThisCookie 导出 cookies 到剪切板")
-    print("3.将得到的内容并粘贴到 cookies.json")
-    print()
+    print("3.将得到的内容并粘贴到 cookies.json\n")
     print("得到 文本格式 cookies 的方法")
     print("1.浏览器打开B站，按 F12")
     print("2.进入控制台，输入 document.cookie")
-    print("3.复制得到的内容并粘贴到 cookies.txt")
-    print()
-    print("按任意键结束程序")
+    print("3.复制得到的内容并粘贴到 cookies.txt\n")
+    print("按任意键结束程序\n")
     input()
     sys.exit()
 
@@ -101,11 +99,13 @@ END = 0
 
 # 获取礼物列表
 def get_gift_list(url, cookies):
+
     # # 加载本地礼物列表，调试用
     # with open("gifts.json", "r", encoding="utf-8") as file:
     #     gifts_json = json.load(file)
     # gift_list = gifts_json["data"]["list"]
     # return gift_list
+
     gift_list = []
     gifts = requests.get(url, cookies=cookies)
     code = gifts.json()["code"]
@@ -130,8 +130,13 @@ def get_guards(gift_list, level):
     guards = dict()
     for gift in gift_list:
         if gift["gift_id"] == gift_id:
-            key = str(gift["uid"]) + "_" + str(gift["time"]).replace(
-                " ", "_") + "_" + str(gift["id"])
+            key = (
+                str(gift["uid"])
+                + "_"
+                + str(gift["time"]).replace(" ", "_")
+                + "_"
+                + str(gift["id"])
+            )
             guards[key] = gift
     return guards
 
@@ -167,8 +172,7 @@ def get_month_guards(year, month):
                 day_text = str(day)
             day_text = "{}-{}-{}".format(year, month_text, day_text)
             day_guards = get_day_guards(day_text)
-            if len(day_guards[1]) + len(day_guards[2]) + len(
-                    day_guards[3]) != 0:
+            if len(day_guards[1]) + len(day_guards[2]) + len(day_guards[3]) != 0:
                 struct_time = time.strptime(day_text, "%Y-%m-%d")
                 timestamp = time.mktime(struct_time)
                 if START == 0 or timestamp < START:
@@ -185,6 +189,12 @@ def get_month_guards(year, month):
 
 
 if __name__ == "__main__":
+    print("本工具仅导出 csv 格式表格文件，不导出 xlsx（Excel 文件）的原因如下：")
+    print("xlsx 格式文件默认会识别数字，但当数字长度大于 15 位时会丢失数据")
+    print(
+        "详见：https://learn.microsoft.com/zh-cn/office/troubleshoot/excel/long-numbers-incorrectly-in-excel\n"
+    )
+
     now = time.time()
     localtime = time.localtime(now)
     year = localtime.tm_year
@@ -204,21 +214,20 @@ if __name__ == "__main__":
         year = int(argv[0])
         month = int(argv[1])
     guards = get_month_guards(year, month)
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
-    row = ("时间", "用户名", "用户ID", "舰长类型", "数量")
-    sheet.append(row)
-    for level in guards:
-        for guard in guards[level]:
-            row = (guards[level][guard]["time"], guards[level][guard]["uname"],
-                   guards[level][guard]["uid"],
-                   guards[level][guard]["gift_name"],
-                   guards[level][guard]["gift_num"])
-            sheet.append(row)
     start = time.localtime(START)
     start = time.strftime("%Y-%m-%d", start)
     end = time.localtime(END)
     end = time.strftime("%Y-%m-%d", end)
-    file_name = "BiliGuard_{}_{}.xlsx".format(start, end)
-    workbook.save(file_name)
+    file_name = "BiliGuard_{}_{}.csv".format(start, end)
+    with open(file_name, "w", encoding="utf-8-sig", newline="") as f:
+        writer_zh = csv.DictWriter(f, fieldnames=["时间", "用户名", "用户ID", "舰长类型", "数量"])
+        writer_zh.writeheader()
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["time", "uname", "uid", "gift_name", "gift_num"],
+            extrasaction="ignore",
+        )
+        for level in guards:
+            for guard in guards[level]:
+                writer.writerow(guards[level][guard])
     print("已保存到 {}".format(file_name))
