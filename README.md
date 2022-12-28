@@ -6,21 +6,13 @@
 ------------
 #### 需要先获取 cookies 才可以使用
 ------------
-下载：https://github.com/cloudskytian/BiliGuard/releases
+下载：https://github.com/cloudskytian/BiliGuard/releases/latest
 ------------
 ## 使用方式：
 
 直接运行即可
 
-最多只支持半年内的记录
-
-如果使用命令行带参数运行，带一个参数则参数为当年月份，带两个参数则参数分别为年份和月份
-
-例：
-
-获取2022年1月的舰长
-
-BiliGuard.exe 2022 1
+受B站限制，最多只支持半年内的记录
 
 cookies 使用 json 和 文本格式 都可以，如果同时存在则优先读取 json
 

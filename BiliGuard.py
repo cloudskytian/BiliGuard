@@ -128,17 +128,10 @@ def get_gift_list(url, cookies):
 # level：1表示总督，2表示提督，3表示舰长
 def get_guards(gift_list, level):
     gift_id = 10000 + level
-    guards = dict()
+    guards = []
     for gift in gift_list:
         if gift["gift_id"] == gift_id:
-            key = (
-                str(gift["uid"])
-                + "_"
-                + str(gift["time"]).replace(" ", "_")
-                + "_"
-                + str(gift["id"])
-            )
-            guards[key] = gift
+            guards.append(gift)
     return guards
 
 
@@ -153,8 +146,12 @@ def get_day_guards(day_text):
     return day_guards
 
 
+GUARDS = dict()
+
 # 获取某个月的舰长
 def get_month_guards(year, month):
+    if year in GUARDS and month in GUARDS[year]:
+        return GUARDS[year][month]
     global START
     global END
     month_guards = dict()
@@ -180,41 +177,20 @@ def get_month_guards(year, month):
                     START = timestamp
                 if timestamp > END:
                     END = timestamp
-            for guards in day_guards:
-                if guards not in month_guards:
-                    month_guards[guards] = day_guards[guards]
+            for level in day_guards:
+                if level not in month_guards:
+                    month_guards[level] = day_guards[level]
                 else:
-                    for guard in day_guards[guards]:
-                        month_guards[guards][guard] = day_guards[guards][guard]
+                    month_guards[level].extend(day_guards[level])
+    if year not in GUARDS:
+        GUARDS[year] = dict()
+    if month not in GUARDS:
+        GUARDS[year][month] = month_guards
     return month_guards
 
 
-if __name__ == "__main__":
-    now = time.time()
-    localtime = time.localtime(now)
-    year = localtime.tm_year
-    month = localtime.tm_mon
-    if len(sys.argv) == 1:
-        print("按回车获取本月舰长")
-        print("输入月份获取该月份的舰长")
-        print("输入年份和月份获取该年该月份的舰长（用空格分隔）")
-        print("最多只支持半年内的记录")
-        argv = input()
-        argv = argv.split(" ")
-    else:
-        argv = sys.argv[1:]
-    if len(argv) == 1 and argv[0] != "":
-        month = int(argv[0])
-    elif len(argv) == 2:
-        year = int(argv[0])
-        month = int(argv[1])
-    guards = get_month_guards(year, month)
-    start = time.localtime(START)
-    start = time.strftime("%Y-%m-%d", start)
-    end = time.localtime(END)
-    end = time.strftime("%Y-%m-%d", end)
-    file_name = "BiliGuard_{}_{}".format(start, end)
-
+# 导出 csv
+def export_csv(guards, file_name):
     with open(file_name + ".csv", "w", encoding="utf-8-sig", newline="") as f:
         writer_zh = csv.DictWriter(f, fieldnames=["时间", "用户名", "用户ID", "舰长类型", "数量"])
         writer_zh.writeheader()
@@ -225,9 +201,12 @@ if __name__ == "__main__":
         )
         for level in guards:
             for guard in guards[level]:
-                writer.writerow(guards[level][guard])
+                writer.writerow(guard)
     print("已保存到 {}".format(file_name + ".csv"))
 
+
+# 导出 xlsx
+def export_xlsx(guards, file_name):
     workbook = openpyxl.Workbook()
     sheet = workbook.active
     row = ("时间", "用户名", "用户ID", "舰长类型", "数量")
@@ -236,11 +215,11 @@ if __name__ == "__main__":
     for level in guards:
         for guard in guards[level]:
             row = (
-                guards[level][guard]["time"],
-                guards[level][guard]["uname"],
-                str(guards[level][guard]["uid"]),
-                guards[level][guard]["gift_name"],
-                guards[level][guard]["gift_num"],
+                guard["time"],
+                guard["uname"],
+                str(guard["uid"]),
+                guard["gift_name"],
+                guard["gift_num"],
             )
             sheet.append(row)
             cell = sheet["C" + str(num)]
@@ -253,3 +232,118 @@ if __name__ == "__main__":
     sheet.column_dimensions["E"].width = 5
     workbook.save(file_name + ".xlsx")
     print("已保存到 {}".format(file_name + ".xlsx"))
+
+
+def parse_args(args):
+    now = time.time()
+    localtime = time.localtime(now)
+    year1 = localtime.tm_year
+    month1 = localtime.tm_mon
+    year2 = year1
+    month2 = month1
+    if not args:
+        args = input()
+    if args == "":
+        guards = get_month_guards(year1, month1)
+        start = START
+        end = END
+    else:
+        args = args.split(" ")
+        if len(args) == 1 and args[0] != "":
+            args[0] = args[0].split("-")
+            if len(args[0]) == 1:
+                month1 = int(args[0][0])
+            elif len(args[0]) == 2:
+                year1 = int(args[0][0])
+                month1 = int(args[0][1])
+            else:
+                print("参数错误，请重新输入：")
+                parse_args(None)
+                return
+            guards = get_month_guards(year1, month1)
+            start = START
+            end = END
+        elif len(args) == 2:
+            for i in range(0, 2):
+                args[i] = args[i].split("-")
+            if len(args[0]) == 1 and len(args[1]) == 1:
+                month1 = int(args[0][0])
+                month2 = int(args[1][0])
+            elif len(args[0]) == 2 and len(args[1]) == 2:
+                year1 = int(args[0][0])
+                month1 = int(args[0][1])
+                year2 = int(args[1][0])
+                month2 = int(args[1][1])
+            else:
+                print("参数错误，请重新输入：")
+                parse_args(None)
+                return
+            guards = {1: [], 2: [], 3: []}
+            start = START
+            end = END
+            if year1 > year2:
+                year1, year2 = year2, year1
+                month1, month2 = month2, month1
+            if year1 < year2:
+                for month in range(month1, 13):
+                    month_guards = get_month_guards(year, month)
+                    for level in guards:
+                        guards[level].extend(month_guards[level])
+                    if start == 0 or start > START:
+                        start = START
+                    if end < END:
+                        end = END
+                for year in range(year1 + 1, year2):
+                    for month in range(1, 13):
+                        month_guards = get_month_guards(year, month)
+                        for level in guards:
+                            guards[level].extend(month_guards[level])
+                        if start == 0 or start > START:
+                            start = START
+                        if end < END:
+                            end = END
+                for month in range(1, month2 + 1):
+                    month_guards = get_month_guards(year, month)
+                    for level in guards:
+                        guards[level].extend(month_guards[level])
+                    if start == 0 or start > START:
+                        start = START
+                    if end < END:
+                        end = END
+            elif year1 == year2:
+                if month1 > month2:
+                    month1, month2 = month2, month1
+                for month in range(month1, month2 + 1):
+                    month_guards = get_month_guards(year1, month)
+                    for level in guards:
+                        guards[level].extend(month_guards[level])
+                    if start == 0 or start > START:
+                        start = START
+                    if end < END:
+                        end = END
+        else:
+            print("参数错误，请重新输入：")
+            parse_args(None)
+            return
+    start = time.localtime(start)
+    start = time.strftime("%Y-%m-%d", start)
+    end = time.localtime(end)
+    end = time.strftime("%Y-%m-%d", end)
+    file_name = "BiliGuard_{}_{}".format(start, end)
+    export_csv(guards, file_name)
+    export_xlsx(guards, file_name)
+
+
+if __name__ == "__main__":
+    print("按回车获取本月舰长")
+    print("直接输入【月份】获取该月份的舰长，如：")
+    print("6")
+    print("输入【年份-月份】获取该年该月份的舰长，如：")
+    print("2022-6")
+    print("输入【月份A 月份B】或【年份-月份A 年份-月份B】获取两个月之间的舰长（用空格分隔），如：")
+    print("6 12")
+    print("或：")
+    print("2022-6 2022-12")
+    print("受B站限制，最多只支持半年内的记录")
+    args = None
+    parse_args(args)
