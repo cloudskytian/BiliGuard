@@ -40,6 +40,6 @@ cookies 使用 json 和 文本格式 都可以，如果同时存在则优先读�
 
 3. 复制得到的内容并粘贴到 cookies.txt
 ------------
-感谢 DahyunNa 的帮助
+感谢 DahyunNa、芙瑞free、芙小瑞 的帮助
 
 exe 文件由 pyinstaller 生成
