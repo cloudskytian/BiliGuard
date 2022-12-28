@@ -12,6 +12,10 @@
 
 直接运行即可
 
+![](pictures/console.png)
+
+![](pictures/result.png)
+
 受B站限制，最多只支持半年内的记录
 
 cookies 使用 json 和 文本格式 都可以，如果同时存在则优先读取 json
@@ -20,7 +24,7 @@ cookies 使用 json 和 文本格式 都可以，如果同时存在则优先读�
 1. Chrome 系浏览器使用扩展 EditThisCookie（需翻墙）：https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg
 2. 浏览器打开B站，使用 EditThisCookie 导出 cookies 到剪切板
 
-![](get_cookie_json.png)
+![](pictures/get_cookie_json.png)
 
 3. 将得到的内容并粘贴到 cookies.json
 
@@ -28,7 +32,7 @@ cookies 使用 json 和 文本格式 都可以，如果同时存在则优先读�
 1. 浏览器打开B站，按 F12
 2. 进入控制台，输入 document.cookie
 
-![](get_cookie_text.png)
+![](pictures/get_cookie_text.png)
 
 3. 复制得到的内容并粘贴到 cookies.txt
 ------------
