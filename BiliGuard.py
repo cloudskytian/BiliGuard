@@ -5,7 +5,10 @@ import json
 import requests
 import sys
 import time
+import os
 import openpyxl
+
+print("当前路径：{}\n".format(os.getcwd()))
 
 BASE_URL = "https://api.live.bilibili.com/xlive/revenue/v1/giftStream/getReceivedGiftStreamNextList?limit=99999999&coin_type=0&begin_time="
 
@@ -15,12 +18,15 @@ BASE_URL = "https://api.live.bilibili.com/xlive/revenue/v1/giftStream/getReceive
 # 2.浏览器打开B站，使用 EditThisCookie 导出 cookies 到剪切板
 # 3.将得到的内容并粘贴到 cookies.json
 def get_cookies_json(json_path):
-    cookies = dict()
-    with open(json_path, "r", encoding = "utf-8") as file:
-        cookies_json = json.load(file)
-    for c in cookies_json:
-        cookies[c["name"]] = c["value"]
-    return cookies
+    try:
+        cookies = dict()
+        with open(json_path, "r", encoding = "utf-8") as file:
+            cookies_json = json.load(file)
+        for c in cookies_json:
+            cookies[c["name"]] = c["value"]
+        return cookies
+    except:
+        return None
 
 # 获取 文本格式的 cookies
 # 得到 文本格式 cookies 的方法：
@@ -28,18 +34,21 @@ def get_cookies_json(json_path):
 # 2.进入控制台，输入 document.cookie
 # 3.复制得到的内容并粘贴到 cookies.txt
 def get_cookies_text(text_path):
-    cookies = dict()
-    with open(text_path, "r", encoding = "utf-8") as file:
-        cookies_text = file.read()
-    if cookies_text[0] == '"':
-        cookies_text = cookies_text[1:]
-    if cookies_text[-1] == '"':
-        cookies_text = cookies_text[:-1]
-    cookies_list = cookies_text.split(";")
-    for cookie in cookies_list:
-        cookie = cookie.split("=")
-        cookies[cookie[0].strip()] = cookie[1].strip()
-    return cookies
+    try:
+        cookies = dict()
+        with open(text_path, "r", encoding = "utf-8") as file:
+            cookies_text = file.read()
+        if cookies_text[0] == '"':
+            cookies_text = cookies_text[1:]
+        if cookies_text[-1] == '"':
+            cookies_text = cookies_text[:-1]
+        cookies_list = cookies_text.split(";")
+        for cookie in cookies_list:
+            cookie = cookie.split("=")
+            cookies[cookie[0].strip()] = cookie[1].strip()
+        return cookies
+    except:
+        return None
 
 def cookies_help():
     print()
@@ -57,18 +66,23 @@ def cookies_help():
 # json 格式的 cookies 优先级高于 文本格式的 cookies
 def get_cookies(text_path, json_path):
     try:
-        cookies_text = get_cookies_text(text_path)
+        print("正在获取 json 格式 cookies")
         cookies_json = get_cookies_json(json_path)
         if cookies_json:
+            print("json 格式 cookies 获取成功，优先使用 json 格式 cookie\n")
             return cookies_json
+        print("正在获取 文本格式 cookies")
+        cookies_text = get_cookies_text(text_path)
         if cookies_text:
+            print("文本格式 cookies 获取成功\n")
             return cookies_text
     except:
-        print("cookies 格式错误，请先获取 cookies")
-        cookies_help()
+        None
+    print("cookies 格式错误，请先获取 cookies")
+    cookies_help()
     print("按任意键结束程序")
     input()
-    exit()
+    sys.exit()
 
 TEXT_PATH = "cookies.txt"
 JSON_PATH = "cookies.json"
