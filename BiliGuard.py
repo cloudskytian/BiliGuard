@@ -67,6 +67,9 @@ def cookies_help():
     print("2.进入控制台，输入 document.cookie")
     print("3.复制得到的内容并粘贴到 cookies.txt")
     print()
+    print("按任意键结束程序")
+    input()
+    sys.exit()
 
 
 # json 格式的 cookies 优先级高于 文本格式的 cookies
@@ -86,9 +89,6 @@ def get_cookies(text_path, json_path):
         None
     print("cookies 格式错误，请先获取 cookies")
     cookies_help()
-    print("按任意键结束程序")
-    input()
-    sys.exit()
 
 
 TEXT_PATH = "cookies.txt"
@@ -105,6 +105,7 @@ def get_gift_list(url, cookies):
     # with open("gifts.json", "r", encoding="utf-8") as file:
     #     gifts_json = json.load(file)
     # gift_list = gifts_json["data"]["list"]
+    # return gift_list
     gift_list = []
     gifts = requests.get(url, cookies=cookies)
     code = gifts.json()["code"]
@@ -129,7 +130,8 @@ def get_guards(gift_list, level):
     guards = dict()
     for gift in gift_list:
         if gift["gift_id"] == gift_id:
-            key = str(gift["uid"]) + str(gift["id"])
+            key = str(gift["uid"]) + "_" + str(gift["time"]).replace(
+                " ", "_") + "_" + str(gift["id"])
             guards[key] = gift
     return guards
 
@@ -173,7 +175,12 @@ def get_month_guards(year, month):
                     START = timestamp
                 if timestamp > END:
                     END = timestamp
-            month_guards.update(day_guards)
+            for guards in day_guards:
+                if guards not in month_guards:
+                    month_guards[guards] = day_guards[guards]
+                else:
+                    for guard in day_guards[guards]:
+                        month_guards[guards][guard] = day_guards[guards][guard]
     return month_guards
 
 
@@ -199,13 +206,14 @@ if __name__ == "__main__":
     guards = get_month_guards(year, month)
     workbook = openpyxl.Workbook()
     sheet = workbook.active
-    row = ("舰长id", "时间", "用户名", "用户ID", "舰长类型")
+    row = ("舰长id", "时间", "用户名", "用户ID", "舰长类型", "数量")
     sheet.append(row)
     for level in guards:
         for guard in guards[level]:
             row = (guards[level][guard]["id"], guards[level][guard]["time"],
                    guards[level][guard]["uname"], guards[level][guard]["uid"],
-                   guards[level][guard]["gift_name"])
+                   guards[level][guard]["gift_name"],
+                   guards[level][guard]["gift_num"])
             sheet.append(row)
     start = time.localtime(START)
     start = time.strftime("%Y-%m-%d", start)
