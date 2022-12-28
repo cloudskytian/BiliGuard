@@ -206,12 +206,12 @@ if __name__ == "__main__":
     guards = get_month_guards(year, month)
     workbook = openpyxl.Workbook()
     sheet = workbook.active
-    row = ("舰长id", "时间", "用户名", "用户ID", "舰长类型", "数量")
+    row = ("时间", "用户名", "用户ID", "舰长类型", "数量")
     sheet.append(row)
     for level in guards:
         for guard in guards[level]:
-            row = (guards[level][guard]["id"], guards[level][guard]["time"],
-                   guards[level][guard]["uname"], guards[level][guard]["uid"],
+            row = (guards[level][guard]["time"], guards[level][guard]["uname"],
+                   guards[level][guard]["uid"],
                    guards[level][guard]["gift_name"],
                    guards[level][guard]["gift_num"])
             sheet.append(row)
