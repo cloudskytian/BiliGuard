@@ -4,7 +4,9 @@
 ### 主播用的！！！
 ### 主播用的！！！
 如果只是获取当前舰长，不需要精确到具体日期，则可以使用
-[【获取当前舰长（不包括前三）】get_guards.py]([http://localhost/](https://github.com/cloudskytian/BiliGuard/blob/main/%E3%80%90%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E8%88%B0%E9%95%BF%EF%BC%88%E4%B8%8D%E5%8C%85%E6%8B%AC%E5%89%8D%E4%B8%89%EF%BC%89%E3%80%91get_guards.py))
+
+[【获取当前舰长（不包括前三）】get_guards.py](https://github.com/cloudskytian/BiliGuard/blob/main/%E3%80%90%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E8%88%B0%E9%95%BF%EF%BC%88%E4%B8%8D%E5%8C%85%E6%8B%AC%E5%89%8D%E4%B8%89%EF%BC%89%E3%80%91get_guards.py)
+
 ------------
 #### 需要先获取 cookies 才可以使用
 ------------
