@@ -11,7 +11,7 @@
 
 另附获取当前高能榜
 
-[【获取当前高能榜】getCurrentGuards.exe](https://github.com/cloudskytian/BiliGuard/releases/latest/download/getOnlineGoldRank.exe)
+[【获取当前高能榜】getOnlineGoldRank.exe](https://github.com/cloudskytian/BiliGuard/releases/latest/download/getOnlineGoldRank.exe)
 
 ------------
 #### 需要先获取 cookies 才可以使用
