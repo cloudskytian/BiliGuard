@@ -5,7 +5,7 @@
 ### 主播用的！！！
 如果只是获取当前舰长，不需要精确到具体日期，则可以使用
 
-[【获取当前舰长】getCurrentGuards.py](https://github.com/cloudskytian/BiliGuard/blob/main/getCurrentGuards.py)
+[【获取当前舰长】getCurrentGuards.exe](https://github.com/cloudskytian/BiliGuard/releases/latest/download/getCurrentGuards.exe)
 
 获取当前舰长不需要cookie
 
