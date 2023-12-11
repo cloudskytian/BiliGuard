@@ -1,10 +1,14 @@
 import json
 import requests
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
+}
 
-def get_ogr_users(url):
+
+def get_ogr_users(url, headers=HEADERS):
     ogr_users = []
-    ogr_user = requests.get(url)
+    ogr_user = requests.get(url, headers=headers)
     code = ogr_user.json()["code"]
     if code == 0:
         ogr_users = ogr_user.json()["data"]["OnlineRankItem"]
